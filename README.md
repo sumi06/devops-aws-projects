@@ -32,4 +32,6 @@ This repository demonstrates a real-world DevOps pipeline leveraging **AWS cloud
 ## 🙌 Author
 
 **Mohanasundram Sumangaly**  
-Cloud Engineer | DevOps Enthusiast 
+Cloud Engineer | DevOps Enthusiast
+
+---

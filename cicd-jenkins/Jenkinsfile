@@ -1,0 +1,127 @@
+def COLOR_MAP = [
+    'SUCCESS': 'good', 
+    'FAILURE': 'danger',
+]
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'MAVEN3.9'
+        jdk 'JDK17'
+    }
+
+    environment {
+        registryCredential = 'ecr:us-east-1:awscreds'
+        appRegistry = "061292091604.dkr.ecr.us-east-1.amazonaws.com/vprofile/appimg"
+        vprofileRegistry = "https://061292091604.dkr.ecr.us-east-1.amazonaws.com"
+        cluster = "vprofile"
+        service = "vprofileappsvc"
+    }
+
+    stages {
+        stage('FETCH CODE') {
+            steps {
+                git branch: 'docker', url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
+
+        stage('UNIT TESTS') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('BUILD') {
+            steps {
+                sh 'mvn clean install -DskipTests'
+            }
+            post {
+                success {
+                    echo 'Archiving artifact'
+                    archiveArtifacts artifacts: '**/*.war'
+                }
+            }
+        }
+
+        stage('CHECKSTYLE ANALYSIS') {
+            steps {
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+
+        stage('CODE ANALYSIS WITH SONARQUBE') {
+          
+		  environment {
+             scannerHome = tool 'SONAR6.2'
+          }
+
+          steps {
+            withSonarQubeEnv('sonarserver') {
+               sh '''${scannerHome}/bin/sonar-scanner \
+                   -Dsonar.projectKey=vprofile \
+                   -Dsonar.projectName=vprofile-repo \
+                   -Dsonar.projectVersion=1.0 \
+                   -Dsonar.sources=src/ \
+                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+            }
+          }
+        }
+
+        stage('QUALITY GATE') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build App Image') {
+          steps {
+       
+            script {
+                dockerImage = docker.build( appRegistry + ":$BUILD_NUMBER", "./Docker-files/app/multistage/")
+                }
+          }
+    
+        }
+
+        stage('Upload App Image') {
+          steps{
+            script {
+              docker.withRegistry( vprofileRegistry, registryCredential ) {
+                dockerImage.push("$BUILD_NUMBER")
+                dockerImage.push('latest')
+              }
+            }
+          }
+        }
+
+        stage('Remove Container Images'){
+            steps{
+                sh 'docker rmi -f $(docker images -a -q)'
+            }
+        }
+
+
+        stage('Deploy to ecs') {
+          steps {
+            withAWS(credentials: 'awscreds', region: 'us-east-1') {
+            sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+               }
+          }
+        }
+    }
+
+    post {
+        always {
+            echo 'Slack Notifications.'
+            slackSend channel: '#devopscicd',
+                color: COLOR_MAP[currentBuild.currentResult],
+                message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+        }
+    }
+}

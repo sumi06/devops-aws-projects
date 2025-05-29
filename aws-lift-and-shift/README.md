@@ -1,4 +1,4 @@
-# 🚀 AWS Lift-and-Shift Deployment: vProfile Application
+# 🚀 AWS Lift-and-Shift Deployment: Web Application
 
 This project demonstrates a full **Lift-and-Shift migration** of the Java-based `vProfile` application onto AWS. It replicates a traditional 3-tier architecture using native AWS services for scalability, reliability, and high availability.
 
@@ -147,5 +147,12 @@ This project demonstrates a full **Lift-and-Shift migration** of the Java-based 
 - Artifact deployment via S3
 - Scalable app layer using AMI-based ASG
 - Public domain routing through GoDaddy DNS
+
+---
+
+## 🧑‍💻 Author
+
+**Mohanasundram Sumangaly**
+Cloud Engineer | DevOps Enthusiast
 
 ---
