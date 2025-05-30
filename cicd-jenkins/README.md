@@ -132,9 +132,9 @@ Developer → GitHub → Jenkins →
 
 ---
 
-## 👨‍💼 Author
+## 🙌 Author
 
-**Mohanasundram Sumangaly**
+**Mohanasundram Sumangaly**  
 Cloud Engineer | DevOps Enthusiast
 
 ---

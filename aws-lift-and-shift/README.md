@@ -150,9 +150,9 @@ This project demonstrates a full **Lift-and-Shift migration** of the Java-based 
 
 ---
 
-## 🧑‍💻 Author
+## 🙌 Author
 
-**Mohanasundram Sumangaly**
+**Mohanasundram Sumangaly**  
 Cloud Engineer | DevOps Enthusiast
 
 ---

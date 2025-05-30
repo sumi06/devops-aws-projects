@@ -89,9 +89,9 @@ This project showcases the deployment of a production-ready Java web application
 
 ---
 
-## 🧑‍💻 Author
+## 🙌 Author
 
-**Mohanasundram Sumangaly**
+**Mohanasundram Sumangaly**  
 Cloud Engineer | DevOps Enthusiast
 
 ---
